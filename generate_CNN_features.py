@@ -35,24 +35,51 @@ def get_groundtruth_data(groundtruth_file):
             pass
     return gt
 
-def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth_file, video_formats):
+def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth_file, video_formats, image_data_shape):
     gt = get_groundtruth_data(groundtruth_file)
+    have_groundtruth_data = False
+    if (len(gt) > 0):
+        have_groundtruth_data = True
     videos = [vid for vid in os.listdir(input_path) if vid.endswith(video_formats)]
     tt = pytictoc.TicToc()
 
     for video in videos:
-        capture = cv2.VideoCapture(video)
+        capture = cv2.VideoCapture(os.path.join(input_path, video))
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        if not os.path.exists(video_i_output_folder):
+        video_output_folder = os.path.join(output_path, video.split(".")[0])
+        if not os.path.exists(video):
             tt.tic()
-            os.makedirs(video_i_output_folder)
-
+            os.makedirs(video_output_folder)
             for frame_id in range(0, total_frames):
-                result, frame = cap.read()
+                result, frame = capture.read()
+                skip_frame = False
+                try:
+                    skip_frame = True if have_groundtruth_data and gt[(video.split(".")[0], frame_id)] == '?' else False
+                except Exception as e:
+                    print(e) # safest option is not to skip the frame
 
+
+                if skip_frame:
+                    print("x", end='', flush=True)
+                else:
+
+                    # Note that we don't scale the pixel values because VGG16 was not trained with normalised pixel values!
+                    # Instead we use the pre-processing function that comes specifically with the VGG16
+                    resized_frame = cv2.resize(frame, image_data_shape[0:2], interpolation=cv2.INTER_AREA)
+                    X = preprocess_input(resized_frame)
+
+                    X = np.expand_dims(X, axis=0)       # package as a batch of size 1, by adding an extra dimension
+
+                    # generate the CNN features for this batch
+                    print(".", end='', flush=True)
+                    X_cnn = cnn_model.predict_on_batch(X)
+
+                    # save to disk
+                    output_file = os.path.join(video_output_folder, str(frame_id) + '.npy')
+                    np.savez(open(output_file, 'wb'), X=X_cnn)
+                    if cv2.waitKey(25) & 0xFF == ord('q'):
+                        break
             tt.toc()
-
 
 
 def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, groundtruth_file=""):
@@ -158,6 +185,6 @@ if __name__ == "__main__":
     model = create_cnn_model(image_data_shape, include_fc1_layer=args.fc1_layer)
 
     if (args.opencv_mode):
-        generate_CNN_features_opencv(input_path=args.input, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth, video_formats=tuple(args.video_formats.split(" ")))
+        generate_CNN_features_opencv(input_path=args.input, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth, video_formats=tuple(args.video_formats.split(" ")), image_data_shape=image_data_shape)
     else:
         generate_CNN_features(input_path=args.input, input_file_mask=args.mask, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth)
