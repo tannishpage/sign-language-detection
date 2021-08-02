@@ -7,7 +7,6 @@
 """
 import os
 import glob
-import msvcrt   # Microsoft specific
 import argparse
 import pytictoc
 import numpy as np
@@ -15,6 +14,44 @@ from keras import preprocessing
 from keras.applications.vgg16 import preprocess_input
 import common
 from create_neural_net_model import create_cnn_model
+import cv2
+
+def get_groundtruth_data(groundtruth_file):
+    gt = {}
+    have_groundtruth_data = False
+    if len(groundtruth_file) > 0:
+        try:
+            # open and load the groundtruth data
+            print('Loading groundtruth data...')
+            with open(groundtruth_file, 'r') as gt_file:
+                gt_lines = gt_file.readlines()
+            for gtl in gt_lines:
+                gtf = gtl.rstrip().split(' ')
+                if len(gtf) == 3:                   # our groundtruth file has 3 items per line (video ID, frame ID, class label)
+                    gt[(gtf[0], int(gtf[1]))] = gtf[2]
+            print('ok\n')
+            have_groundtruth_data = True
+        except:
+            pass
+    return gt
+
+def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth_file, video_formats):
+    gt = get_groundtruth_data(groundtruth_file)
+    videos = [vid for vid in os.listdir(input_path) if vid.endswith(video_formats)]
+    tt = pytictoc.TicToc()
+
+    for video in videos:
+        capture = cv2.VideoCapture(video)
+        total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        if not os.path.exists(video_i_output_folder):
+            tt.tic()
+            os.makedirs(video_i_output_folder)
+
+            for frame_id in range(0, total_frames):
+                result, frame = cap.read()
+
+            tt.toc()
 
 
 
@@ -40,6 +77,9 @@ def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, g
     tt = pytictoc.TicToc()
 
     # get all the video folders
+
+    ## TODO: replace this code to use opencv instead of the extracted frames
+    ##       because this takes a lot more hdd space
     video_folders = os.listdir(input_path)
     video_folders.sort(key=common.natural_sort_key)
 
@@ -54,7 +94,7 @@ def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, g
 
             # get the list of extracted frames for this video
             video_i_images = glob.glob(os.path.join(input_path, video_i, input_file_mask))
-            video_i_images.sort(key=common.natural_sort_key)       # ensure images are in the correct order to preserve temporal sequence 
+            video_i_images.sort(key=common.natural_sort_key)       # ensure images are in the correct order to preserve temporal sequence
             assert(len(video_i_images) > 0), "video %s has no frames!!!" % video_i
 
             # for each video frame...
@@ -88,11 +128,11 @@ def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, g
             tt.toc()
         print('\n\n')
 
-        if msvcrt.kbhit():  # if a key is pressed 
+        """if msvcrt.kbhit():  # if a key is pressed
             key = msvcrt.getch()
             if key == b'q' or key == b'Q':
                 print('User termination')
-                return
+                return"""
 
     print('\n\nReady')
 
@@ -106,6 +146,8 @@ if __name__ == "__main__":
     argparser.add_argument("--imheight", help="Video frame height (in pixels)", default=224)
     argparser.add_argument("--fc1_layer", help="Include the first fully-connected layer (fc1) of the CNN", default=True)
     argparser.add_argument("--groundtruth", help="If groundtruth is available, then we load the file in order to only process video frames which have been labelled.", default="")
+    argparser.add_argument("--opencv_mode", help="Use the video files directly", default=False)
+    argparser.add_argument("--video_formats", help="What are the formats of the videos used? (Only applicable if you use --opencv_mode=True) Example: --video_formats \"mp4 mkv\", or --video_formats mp4")
     args = argparser.parse_args()
 
     if not args.input or not args.output:
@@ -115,4 +157,7 @@ if __name__ == "__main__":
     image_data_shape = (args.imwidth, args.imheight, 3)   # width, height, channels
     model = create_cnn_model(image_data_shape, include_fc1_layer=args.fc1_layer)
 
-    generate_CNN_features(input_path=args.input, input_file_mask=args.mask, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth)
+    if (args.opencv_mode):
+        generate_CNN_features_opencv(input_path=args.input, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth, video_formats=tuple(args.video_formats.split(" ")))
+    else:
+        generate_CNN_features(input_path=args.input, input_file_mask=args.mask, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth)
