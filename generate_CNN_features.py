@@ -5,6 +5,7 @@
     Note that for optical flow data, the script generate_CNN_features_from_flow_data.py
     should be used instead.
 """
+import sys
 import os
 import glob
 import argparse
@@ -43,10 +44,11 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
     videos = [vid for vid in os.listdir(input_path) if vid.endswith(video_formats)]
     tt = pytictoc.TicToc()
 
-    for video in videos:
+    for i, video in enumerate(videos):
         capture = cv2.VideoCapture(os.path.join(input_path, video))
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         video_output_folder = os.path.join(output_path, video.split(".")[0])
+        print('processing video %d of %d:  %s: ' % (i+1, len(videos), video))
         if not os.path.exists(video):
             tt.tic()
             os.makedirs(video_output_folder)
@@ -57,7 +59,6 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     skip_frame = True if have_groundtruth_data and gt[(video.split(".")[0], frame_id)] == '?' else False
                 except Exception as e:
                     print(e) # safest option is not to skip the frame
-
 
                 if skip_frame:
                     print("x", end='', flush=True)
@@ -71,7 +72,8 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     X = np.expand_dims(X, axis=0)       # package as a batch of size 1, by adding an extra dimension
 
                     # generate the CNN features for this batch
-                    print(".", end='', flush=True)
+                    #print(".", end='', flush=True) # TODO: Change the way we see progress. Maybe use a progress bar or something nicer and neater to represent the progress
+                    sys.stdout.write("\r{}/{}".format(frame_id, total_frames))
                     X_cnn = cnn_model.predict_on_batch(X)
 
                     # save to disk
@@ -80,6 +82,7 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     if cv2.waitKey(25) & 0xFF == ord('q'):
                         break
             tt.toc()
+
 
 
 def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, groundtruth_file=""):
