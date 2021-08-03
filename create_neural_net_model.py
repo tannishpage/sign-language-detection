@@ -1,13 +1,13 @@
 """
     This script creates our RNN-based neural network.
     Since we do our processing in stages (due to memory limitations and to run on multiple machines), we can either create
-    the full network (CNN+RNN), or else just the convolutional base on its own (to extract image features and save them 
+    the full network (CNN+RNN), or else just the convolutional base on its own (to extract image features and save them
     to disk), or the top part of the network (the RNN)
 """
 import os
 from keras.models import Model, Sequential
 from keras.layers import Dropout, Flatten, Dense, LSTM, GRU, BatchNormalization, TimeDistributed, Bidirectional, MaxPool2D
-from keras.optimizers import SGD, Adam, RMSprop
+from tensorflow.keras.optimizers import SGD, Adam, RMSprop
 from keras.applications.vgg16 import VGG16
 from keras.utils.vis_utils import plot_model
 
@@ -25,7 +25,7 @@ def create_cnn_model(image_data_shape, include_fc1_layer):
 
     print('Convolutional base:')
     print(cnn_model.summary())
-    plot_model(cnn_model, to_file='CNN.png', show_shapes=True, show_layer_names=True)    
+    plot_model(cnn_model, to_file='CNN.png', show_shapes=True, show_layer_names=True)
     return cnn_model
 
 
@@ -34,7 +34,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
                             include_top_layers=True, rnn_model_weights_file=None, learning_rate=0.001):
 
     if include_convolutional_base:
-        # load the convolutional base 
+        # load the convolutional base
         vgg16_model = create_cnn_model(image_data_shape, include_cnn_fc1_layer)
 
         cnn_model = Sequential()
@@ -53,12 +53,12 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
         rnn_model.add(Dense(64, activation='relu'))
         rnn_model.add(Dropout(0.4))
         rnn_model.add(Dense(3, activation='softmax'))
-    
+
         # optimiser and learning rate
         #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         opt = Adam(lr=learning_rate, decay=1e-6)
         #opt = RMSprop(lr=0.001)
-        
+
         rnn_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
         # if model has already been trained or is undergoing training, then load the trained weights from file
@@ -90,7 +90,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
     return model
 
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
 
     IMAGE_DATA_SHAPE = (224, 224, 3)            # image width, image height, channels
     VIDEO_CLIP_DATA_SHAPE = (20, 224, 224, 3)   # timesteps, image width, image height, channels

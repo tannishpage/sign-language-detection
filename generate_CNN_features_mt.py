@@ -20,7 +20,6 @@ from create_neural_net_model import create_cnn_model
 
 def _process_video(video_list_item, input_path, input_file_mask, output_path, have_groundtruth_data, gt, cnn_model):
     i, video = video_list_item
-    print('processing video %d:  %s' % (i, video))
 
     tt = pytictoc.TicToc()
 
@@ -28,16 +27,17 @@ def _process_video(video_list_item, input_path, input_file_mask, output_path, ha
     capture = cv2.VideoCapture(os.path.join(input_path, video))
     total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
     video_output_folder = os.path.join(output_path, video.split(".")[0])
+    print('processing video %d:  %s. Total Frames: %d' % (i, video, total_frames))
     if not os.path.exists(video):
         tt.tic()
         os.makedirs(video_output_folder)
         for frame_id in range(0, total_frames):
             result, frame = capture.read()
             skip_frame = False
-            try:
+            """try:
                 skip_frame = True if have_groundtruth_data and gt[(video.split(".")[0], frame_id)] == '?' else False
             except Exception as e:
-                print(e) # safest option is not to skip the frame
+                print(e) # safest option is not to skip the frame"""
 
             if skip_frame:
                 print("x", end='', flush=True)
@@ -53,12 +53,10 @@ def _process_video(video_list_item, input_path, input_file_mask, output_path, ha
                 # generate the CNN features for this batch
                 #print(".", end='', flush=True) # TODO: Change the way we see progress. Maybe use a progress bar or something nicer and neater to represent the progress
                 X_cnn = cnn_model.predict_on_batch(X)
-
+                #print("{}:{}/{}".format(video, frame_id, total_frames))
                 # save to disk
                 output_file = os.path.join(video_output_folder, str(frame_id) + '.npy')
                 np.savez(open(output_file, 'wb'), X=X_cnn)
-                if cv2.waitKey(25) & 0xFF == ord('q'):
-                    break
         tt.toc()
         print("------ Finished Processing video {} ------".format(i))
         return True
@@ -92,7 +90,7 @@ def generate_CNN_features_mt_opencv(input_path, cnn_model, output_path, groundtr
     print('Processing %d videos' % len(videos))
 
     # prepare for multiprocessing
-    pool = ThreadPool(5)
+    pool = ThreadPool(4)
     fn = functools.partial(_process_video, input_path=input_path, input_file_mask="", output_path=output_path,
             have_groundtruth_data=have_groundtruth_data, gt=gt, cnn_model=cnn_model)
     res = pool.map(fn, videos)
