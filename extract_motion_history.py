@@ -92,7 +92,7 @@ def _extract_mhi(file_chunk, output_path, resize_shape, output_fps, num_stacked_
 
 
 def extract_motion_history(input_path, output_path, resize_shape, output_fps, num_stacked_frames=2, max_frames_per_video=999999,
-        do_delete_processed_videos=False):
+        do_delete_processed_videos=False, num_proc=1):
     """
         Given an input video, this function extracts a motion history image (MHI) of K consecutive frames, with K determined
         by parameter num_stacked_frames. The MHI operation is performed at a rate of N times per second (N determined by
@@ -129,7 +129,7 @@ def extract_motion_history(input_path, output_path, resize_shape, output_fps, nu
 
     # parallelise execution
     print('processing video list...')
-    pool = Pool()
+    pool = Pool(num_proc)
 
     process_fn = functools.partial(_extract_mhi, output_path=output_path, resize_shape=resize_shape, output_fps=output_fps,
         num_stacked_frames=num_stacked_frames, max_frames_per_video=max_frames_per_video, do_delete_processed_videos=do_delete_processed_videos)
@@ -146,6 +146,7 @@ if __name__ == "__main__":
     argparser.add_argument("--imwidth", help="Extracted frames wil be resized to this width (in pixels)", default=224)
     argparser.add_argument("--imheight", help="Extracted frames wil be resized to this height (in pixels)", default=224)
     argparser.add_argument("--del-videos", help="Delete each video once frames have been extracted from it", default=False)
+    argparser.add_argument("--num_proc", help="Number of simultanious processes to run", default=1)
     args = argparser.parse_args()
 
     if not args.input or not args.output:
@@ -154,4 +155,4 @@ if __name__ == "__main__":
 
     extract_motion_history(input_path=args.input, output_path=args.output, output_fps=int(args.fps),
             num_stacked_frames=int(args.K), max_frames_per_video=int(args.max_frames),
-            resize_shape=(int(args.imwidth), int(args.imheight)), do_delete_processed_videos=args.del_videos)
+            resize_shape=(int(args.imwidth), int(args.imheight)), do_delete_processed_videos=args.del_videos, num_proc = int(args.num_proc))
