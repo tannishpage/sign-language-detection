@@ -49,11 +49,14 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         video_output_folder = os.path.join(output_path, video.split(".")[0])
         print('processing video %d of %d:  %s: ' % (i+1, len(videos), video))
-        if not os.path.exists(video):
+        if not os.path.exists(video_output_folder):
             tt.tic()
             os.makedirs(video_output_folder)
             for frame_id in range(0, total_frames):
                 result, frame = capture.read()
+                if not result:
+                    print("\tOpenCV read more frames then there are in the video", end='')
+                    break
                 skip_frame = False
                 try:
                     skip_frame = True if have_groundtruth_data and gt[(video.split(".")[0], frame_id)] == '?' else False
@@ -73,7 +76,7 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
 
                     # generate the CNN features for this batch
                     #print(".", end='', flush=True) # TODO: Change the way we see progress. Maybe use a progress bar or something nicer and neater to represent the progress
-                    sys.stdout.write("\r{}/{}".format(frame_id, total_frames))
+                    sys.stdout.write("\r{:.2f}%".format( (frame_id/total_frames) * 100))
                     X_cnn = cnn_model.predict_on_batch(X)
 
                     # save to disk
@@ -81,6 +84,7 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     np.savez(open(output_file, 'wb'), X=X_cnn)
                     if cv2.waitKey(25) & 0xFF == ord('q'):
                         break
+            print()
             tt.toc()
 
 

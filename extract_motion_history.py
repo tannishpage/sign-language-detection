@@ -9,7 +9,7 @@ import os
 import math
 import time
 import glob
-import msvcrt   # Microsoft specific
+#import msvcrt   # Microsoft specific
 import argparse
 import functools
 from multiprocessing import Pool
@@ -46,7 +46,7 @@ def _extract_mhi(file_chunk, output_path, resize_shape, output_fps, num_stacked_
 
     # create the output folder
     os.makedirs(output_video_dir)
-    
+
     frame_count = 0
     save_count = 0
     while video.isOpened():
@@ -59,7 +59,7 @@ def _extract_mhi(file_chunk, output_path, resize_shape, output_fps, num_stacked_
         success, img = video.read()
         if success is False:
             break
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.resize(img, resize_shape, interpolation = cv2.INTER_AREA)
         img_buffer.append(img)
 
@@ -91,7 +91,7 @@ def _extract_mhi(file_chunk, output_path, resize_shape, output_fps, num_stacked_
         os.remove(video_file)
 
 
-def extract_motion_history(input_path, output_path, resize_shape, output_fps, num_stacked_frames=2, max_frames_per_video=999999, 
+def extract_motion_history(input_path, output_path, resize_shape, output_fps, num_stacked_frames=2, max_frames_per_video=999999,
         do_delete_processed_videos=False):
     """
         Given an input video, this function extracts a motion history image (MHI) of K consecutive frames, with K determined
