@@ -29,7 +29,10 @@ def _extract_mhi(file_chunk, output_path, resize_shape, output_fps, num_stacked_
     # compute the frame read step based on the video's fps and the output fps
     orig_framerate = video.get(cv2.CAP_PROP_FPS)
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
-    read_step = math.ceil(orig_framerate / output_fps)
+    if (output_fps == 0):
+        read_step = math.ceil(orig_framerate / orig_framerate)
+    else:
+        read_step = math.ceil(orig_framerate / output_fps)
 
     print('(%d) Extracting & processing video frames from %s into %s...   (%dx%d, %f fps, %d frames)' % (file_num, video_file,
         output_video_dir, int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)),
