@@ -1,4 +1,5 @@
 import os, glob
+import sys
 import math
 import random
 import threading
@@ -33,8 +34,9 @@ class VideoSegmentReader(threading.Thread):
         if self.do_timings:
             t.tic()
 
+        print(f"I need to process {len(self.segments)} segments")
         while True:
-            for seg in self.segments:
+            for i, seg in enumerate(self.segments):
                 # should the thread terminate?
                 if self.stopped.is_set():
                     print('VideoSegmentReader thread exiting')
@@ -51,7 +53,7 @@ class VideoSegmentReader(threading.Thread):
                 X = np.array(X)
                 sample_no += 1
 
-                # append to our batch          
+                # append to our batch
                 X_batch.append(X)
                 Y_batch[sample_no-1, Y] = 1         # one-hot encoding of the class label
                 id_batch.append(idb)
@@ -62,9 +64,10 @@ class VideoSegmentReader(threading.Thread):
                 if sample_no == self.output_batch_size:
                     try:
                         X_batch = np.array(X_batch)
+                        print(type(Y_batch))
                         if self.do_timings:
                             t.toc('batch construction')
-                        
+
                         placed_on_queue = False
                         while not placed_on_queue:
                             try:
@@ -142,7 +145,7 @@ class VideoSegmentDataGenerator:
                     assert class_label is None or class_label == k[1], 'Video segment has inconsistent class labelling'
                     class_label = k[1]
                     seg_j_data.append(k[0])
-                
+
                 if class_label != '?':      # ignore this special case
                     if not class_label in self.classes:
                         self.classes.append(class_label)

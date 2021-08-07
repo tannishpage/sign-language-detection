@@ -2,7 +2,7 @@
     This script can be used to separate video segment data into multiple folds.
     Stratified sampling is used for the fold generation.
     It can be used on raw video frames, MHIs extracted from the video frames, optical
-    flow data or frame-difference data. 
+    flow data or frame-difference data.
 
     For example, (1) extract MHI by calling extract_motion_history.py. Then, (2) cut the
     video data into separate segments by calling cut_into_video_segments.py. Then,
@@ -37,7 +37,7 @@ def prepare_validation_folds(input_path, output_path, folds):
     video_segment_files.sort(key=common.natural_sort_key)
 
     # determine to which class each video segment belongs to
-    print("Processing %d video segments..." % len(video_segment_files))    
+    print("Processing %d video segments..." % len(video_segment_files))
     for seg in video_segment_files:
         with open(os.path.join(input_path, seg), 'r') as f:
             seg_data = f.readlines()

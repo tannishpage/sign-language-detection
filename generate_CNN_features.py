@@ -129,10 +129,11 @@ def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, g
             # get the list of extracted frames for this video
             video_i_images = glob.glob(os.path.join(input_path, video_i, input_file_mask))
             video_i_images.sort(key=common.natural_sort_key)       # ensure images are in the correct order to preserve temporal sequence
+            length = len(video_i_images)
             assert(len(video_i_images) > 0), "video %s has no frames!!!" % video_i
 
             # for each video frame...
-            for image_j in video_i_images:
+            for i, image_j in enumerate(video_i_images):
                 frame_id = int(os.path.splitext(os.path.basename(image_j))[0])
                 skip_frame = False
                 try:
@@ -153,12 +154,14 @@ def generate_CNN_features(input_path, input_file_mask, cnn_model, output_path, g
                     X = np.expand_dims(X, axis=0)       # package as a batch of size 1, by adding an extra dimension
 
                     # generate the CNN features for this batch
-                    print(".", end='', flush=True)
+                    sys.stdout.write("\r[{}{}] {:.2f}%".format('='*int((((i + 1)/length)*100)/2), '.' *(50 - int((((i + 1)/length)*100)/2)), ((i + 1)/length)*100))
+                    sys.stdout.flush()
                     X_cnn = cnn_model.predict_on_batch(X)
 
                     # save to disk
                     output_file = os.path.join(video_i_output_folder, os.path.splitext(os.path.basename(image_j))[0] + '.npy')
                     np.savez(open(output_file, 'wb'), X=X_cnn)
+            print(" ", end='')
             tt.toc()
         print('\n\n')
 

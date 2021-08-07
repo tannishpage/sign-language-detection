@@ -5,10 +5,10 @@
     to disk), or the top part of the network (the RNN)
 """
 import os
-from keras.models import Model, Sequential
-from keras.layers import Dropout, Flatten, Dense, LSTM, GRU, BatchNormalization, TimeDistributed, Bidirectional, MaxPool2D
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Dropout, Flatten, Dense, LSTM, GRU, BatchNormalization, TimeDistributed, Bidirectional, MaxPool2D
 from tensorflow.keras.optimizers import SGD, Adam, RMSprop
-from keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg16 import VGG16
 from keras.utils.vis_utils import plot_model
 
 
@@ -56,7 +56,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
 
         # optimiser and learning rate
         #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        opt = Adam(lr=learning_rate, decay=1e-6)
+        opt = Adam(learning_rate=learning_rate, decay=1e-6)
         #opt = RMSprop(lr=0.001)
 
         rnn_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -85,7 +85,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
     model = cnn_model if include_convolutional_base else rnn_model
     print(model.summary())
     diagram_name = 'td(CNN)_' if include_convolutional_base else '_GRU'
-    plot_model(model, to_file=diagram_name+'.png', show_shapes=True, show_layer_names=True)
+    #plot_model(model, to_file=diagram_name+'.png', show_shapes=True, show_layer_names=True)
 
     return model
 

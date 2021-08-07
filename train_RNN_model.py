@@ -9,21 +9,22 @@
 import argparse
 import gc
 import pytictoc
-import msvcrt   # Microsoft specific
+#import msvcrt   # Microsoft specific
 import matplotlib.pyplot as plt
-from keras.callbacks import EarlyStopping, ModelCheckpoint, Callback
-from keras import backend as K
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, Callback
+from tensorflow.keras import backend as K
 from create_neural_net_model import create_neural_net_model
 from generators import VideoSegmentDataGenerator
 
 
 class _myTrainingCallback(Callback):
     def on_batch_end(self, batch, logs={}):
-        if msvcrt.kbhit():  # if a key is pressed
+        pass
+        """if msvcrt.kbhit():  # if a key is pressed
             key = msvcrt.getch()
             if key == b'q' or key == b'Q':
                 print('User termination')
-                self.model.stop_training = True
+                self.model.stop_training = True"""
 
     def on_epoch_begin(self, epoch, logs={}):
         lr = float(K.get_value(self.model.optimizer.lr))
@@ -40,7 +41,7 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     # load the top RNN part of the model, without the convolutional base
     model = create_neural_net_model(image_data_shape, video_data_shape, rnn_input_shape,
             include_convolutional_base=False, include_cnn_fc1_layer=include_cnn_fc1_layer, include_top_layers=True, rnn_model_weights_file=model_weights_file, learning_rate=learning_rate)
-            
+
     # generators for loading the CNN features
     print('Preparing the data generators...')
     print('Training data generator:')
@@ -85,7 +86,7 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
         pass    # if user presses 'q'uit during training, we might not have validation accuracy and loss
 
     gc.enable()
-    
+
     train_gen.stop()
     validation_gen.stop()
 
@@ -126,4 +127,3 @@ if __name__ == "__main__":
         model_weights_file=args.model, learning_rate=float(args.lr))
 
     t.toc('RNN Training')
-    
