@@ -52,7 +52,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
         rnn_model.add(BatchNormalization())
         rnn_model.add(Dense(64, activation='relu'))
         rnn_model.add(Dropout(0.4))
-        rnn_model.add(Dense(3, activation='softmax'))
+        rnn_model.add(Dense(2, activation='softmax'))
 
         # optimiser and learning rate
         #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)

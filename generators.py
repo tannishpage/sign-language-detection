@@ -57,14 +57,13 @@ class VideoSegmentReader(threading.Thread):
                 X_batch.append(X)
                 Y_batch[sample_no-1, Y] = 1         # one-hot encoding of the class label
                 id_batch.append(idb)
-
+                #print(Y_batch)
                 assert sum(sum(Y_batch)) == sample_no, "Class labels for current batch are not properly one-hot-encoded!"
 
                 # do we have a complete batch?
                 if sample_no == self.output_batch_size:
                     try:
                         X_batch = np.array(X_batch)
-                        print(type(Y_batch))
                         if self.do_timings:
                             t.toc('batch construction')
 
@@ -210,7 +209,7 @@ class VideoSegmentDataGenerator:
         _, ct = np.unique(y, return_counts=True)
 
         # compute the class weights
-        cw = class_weight.compute_class_weight('balanced', self.classes, y)
+        cw = class_weight.compute_class_weight('balanced', classes=self.classes, y=y)
         print('class weights:', cw, 'totals:', ct, 'class labels:', self.classes)
 
         return (cw, ct)

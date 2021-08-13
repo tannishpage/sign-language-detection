@@ -52,15 +52,24 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     # determine class imbalance
     print('Checking for class imbalance')
     class_weights, _ = train_gen.get_class_weights()
-
     # train the model (saving the model weights after each epoch)
     print('\nCan press (q) to quit the training process...\n\n')
     callbacks = [EarlyStopping(monitor='val_loss', patience=5, verbose=1),
                  ModelCheckpoint(model_weights_file, monitor='val_loss', save_best_only=True, verbose=1),
                  _myTrainingCallback()]
-    history = model.fit_generator(generator=train_gen.generator(), steps_per_epoch=train_gen.number_of_batches(),
-                    validation_data=validation_gen.generator(), validation_steps=validation_gen.number_of_batches(),
-                    epochs=50, callbacks=callbacks, shuffle=False, verbose=1, class_weight=class_weights)
+    history = model.fit(train_gen.generator(), 
+                        steps_per_epoch=train_gen.number_of_batches(),
+                        validation_data=validation_gen.generator(),
+                        validation_steps=validation_gen.number_of_batches(),
+                        epochs=50,
+                        callbacks=callbacks,
+                        shuffle=False,
+                        verbose=1,
+                        class_weight={0:class_weights[0], 1:class_weights[1]})
+
+    #history = model.fit_generator(generator=train_gen.generator(), steps_per_epoch=train_gen.number_of_batches(),
+    #                validation_data=validation_gen.generator(), validation_steps=validation_gen.number_of_batches(),
+    #                epochs=50, callbacks=callbacks, shuffle=False, verbose=1, class_weight=class_weights)
     #model.save_weights(model_weights_file)
 
     try:
@@ -117,7 +126,7 @@ if __name__ == "__main__":
 
     image_data_shape = (args.imwidth, args.imheight, 3)                         # image width, image height, channels
     video_clip_data_shape = (args.timesteps, args.imwidth, args.imheight, 3)    # timesteps, image width, image height, channels
-    rnn_input_shape = (args.timesteps, 4096) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
+    rnn_input_shape = (args.timesteps, 1000) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
 
     t = pytictoc.TicToc()
     t.tic()

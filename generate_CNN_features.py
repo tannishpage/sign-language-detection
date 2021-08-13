@@ -75,7 +75,7 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     X = np.expand_dims(X, axis=0)       # package as a batch of size 1, by adding an extra dimension
 
                     # generate the CNN features for this batch
-                    #print(".", end='', flush=True) # TODO: Change the way we see progress. Maybe use a progress bar or something nicer and neater to represent the progress
+                    #print(".", end='', flush=True)
                     sys.stdout.write("\r{:.2f}%".format( (frame_id/total_frames) * 100))
                     X_cnn = cnn_model.predict_on_batch(X)
 
