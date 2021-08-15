@@ -11,7 +11,7 @@ from sklearn.utils import class_weight
 
 
 class VideoSegmentReader(threading.Thread):
-    def __init__(self, batch_queue, event, segments, output_batch_size, classes, num_classes, do_shuffle, return_sample_id, do_timings=True):
+    def __init__(self, batch_queue, event, segments, output_batch_size, classes, num_classes, do_shuffle, return_sample_id, do_timings=False):
         threading.Thread.__init__(self)
         self.queue = batch_queue
         self.stopped = event
@@ -164,18 +164,15 @@ class VideoSegmentDataGenerator:
         print('Starting VideoSegmentReader thread(s)...')
         self.stop_event = threading.Event()
         self.queue = queue.Queue(100)
-        lent = len(self.segments)
-        num_splits = 3
-        start = 0.0
-        end = lent / num_splits
-        self.threads = []
-        for x in range(0, num_splits):
-            thread = VideoSegmentReader(self.queue, self.stop_event, self.segments[int(start):int(end)], self.output_batch_size,
+        self.reader_thread1 = VideoSegmentReader(self.queue, self.stop_event, self.segments[:len(self.segments)//3], self.output_batch_size,
                                     self.classes, self.num_classes, self.do_shuffle, self.return_sample_id, self.do_timings)
-            self.threads.append(thread)
-            thread.start()
-            start = end
-            end += lent / num_splits
+        self.reader_thread1.start()
+        self.reader_thread2 = VideoSegmentReader(self.queue, self.stop_event, self.segments[len(self.segments)//3:2*len(self.segments)//3], self.output_batch_size,
+                                    self.classes, self.num_classes, self.do_shuffle, self.return_sample_id, self.do_timings)
+        self.reader_thread2.start()
+        self.reader_thread3 = VideoSegmentReader(self.queue, self.stop_event, self.segments[2*len(self.segments)//3:], self.output_batch_size,
+                                    self.classes, self.num_classes, self.do_shuffle, self.return_sample_id, self.do_timings)
+        self.reader_thread3.start()
 
     def __del__(self):
         self.stop()
@@ -184,8 +181,9 @@ class VideoSegmentDataGenerator:
         print('Signaling VideoSegmentReader thread(s) to stop...')
         self.stop_event.set()
         print('Waiting for VideoSegmentReader thread(s) to stop...')
-        for thread in self.threads:
-            thread.join(10)
+        self.reader_thread1.join(10)
+        self.reader_thread2.join(10)
+        self.reader_thread3.join(10)
         print('VideoSegmentDataGenerator exiting')
 
     def __len__(self):
@@ -197,7 +195,6 @@ class VideoSegmentDataGenerator:
     # the generator method
     def generator(self):
         while True:
-            #print("Queue Size:", self.queue.qsize())
             batch = self.queue.get(block=True, timeout=None)
             yield batch
 

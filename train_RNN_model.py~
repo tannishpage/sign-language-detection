@@ -54,10 +54,9 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     class_weights, _ = train_gen.get_class_weights()
     # train the model (saving the model weights after each epoch)
     print('\nCan press (q) to quit the training process...\n\n')
-    callbacks = [EarlyStopping(monitor='val_loss', patience=50, verbose=1),
+    callbacks = [EarlyStopping(monitor='val_loss', patience=5, verbose=1),
                  ModelCheckpoint(model_weights_file, monitor='val_loss', save_best_only=True, verbose=1),
                  _myTrainingCallback()]
-
     history = model.fit(train_gen.generator(), 
                         steps_per_epoch=train_gen.number_of_batches(),
                         validation_data=validation_gen.generator(),
