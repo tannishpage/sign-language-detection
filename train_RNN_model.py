@@ -34,7 +34,7 @@ class _myTrainingCallback(Callback):
         gc.collect()
 
 
-def train_RNN_model(training_data_path, validation_data_path, input_file_mask, batch_size, image_data_shape, video_data_shape, rnn_input_shape, include_cnn_fc1_layer, model_weights_file, learning_rate):
+def train_RNN_model(training_data_path, validation_data_path, input_file_mask, batch_size, image_data_shape, video_data_shape, rnn_input_shape, include_cnn_fc1_layer, model_weights_file, learning_rate, thread_count):
 
     gc.disable()
 
@@ -45,9 +45,9 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     # generators for loading the CNN features
     print('Preparing the data generators...')
     print('Training data generator:')
-    train_gen = VideoSegmentDataGenerator(training_data_path, input_file_mask, output_batch_size=batch_size)
+    train_gen = VideoSegmentDataGenerator(training_data_path, input_file_mask, output_batch_size=batch_size, thread_count)
     print('Validation data generator:')
-    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size)
+    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size, thread_count)
 
     # determine class imbalance
     print('Checking for class imbalance')
@@ -113,6 +113,7 @@ if __name__ == "__main__":
     argparser.add_argument("--timesteps", help="Timesteps used in the RNN model. Should be set to the length in frames of the video segments", default=20)
     argparser.add_argument("--batch", help="Batch size for the RNN network", default=32)
     argparser.add_argument("--lr", help="Learning rate for the Adam optimiser", default=0.001)
+    argparser.add_argument("--thread_count", help="Number of threads to open for data loader (Generator)", default=3)
     args = argparser.parse_args()
 
     if not args.train or not args.validate or not args.model:
@@ -124,6 +125,7 @@ if __name__ == "__main__":
     args.timesteps = int(args.timesteps)
     args.fc1_layer = (args.fc1_layer.lower() == 'true')
     args.batch = int(args.batch)
+    args.thread_count = int(args.thread_count)
 
     image_data_shape = (args.imwidth, args.imheight, 3)                         # image width, image height, channels
     video_clip_data_shape = (args.timesteps, args.imwidth, args.imheight, 3)    # timesteps, image width, image height, channels
@@ -134,6 +136,6 @@ if __name__ == "__main__":
 
     train_RNN_model(training_data_path=args.train, validation_data_path=args.validate, input_file_mask=args.mask, batch_size=args.batch,
         image_data_shape=image_data_shape, video_data_shape=video_clip_data_shape, rnn_input_shape=rnn_input_shape, include_cnn_fc1_layer=args.fc1_layer,
-        model_weights_file=args.model, learning_rate=float(args.lr))
+        model_weights_file=args.model, learning_rate=float(args.lr), args.thread_count)
 
     t.toc('RNN Training')

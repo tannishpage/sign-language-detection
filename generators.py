@@ -108,7 +108,7 @@ class VideoSegmentDataGenerator:
                 do_processing_on(a,b,c)
     """
 
-    def __init__(self, parent_folder, file_mask, output_batch_size, do_shuffle=True, return_sample_id=False, do_timings=False):
+    def __init__(self, parent_folder, file_mask, output_batch_size, do_shuffle=True, return_sample_id=False, do_timings=False, thread_count=3):
         self.parent_folder = parent_folder
         self.file_mask = file_mask
         self.output_batch_size = output_batch_size
@@ -165,17 +165,16 @@ class VideoSegmentDataGenerator:
         self.stop_event = threading.Event()
         self.queue = queue.Queue(100)
         lent = len(self.segments)
-        num_splits = 3
         start = 0.0
-        end = lent / num_splits
+        end = lent / thread_count
         self.threads = []
-        for x in range(0, num_splits):
+        for x in range(0, thread_count):
             thread = VideoSegmentReader(self.queue, self.stop_event, self.segments[int(start):int(end)], self.output_batch_size,
                                     self.classes, self.num_classes, self.do_shuffle, self.return_sample_id, self.do_timings)
             self.threads.append(thread)
             thread.start()
             start = end
-            end += lent / num_splits
+            end += lent / thread_count
 
     def __del__(self):
         self.stop()
