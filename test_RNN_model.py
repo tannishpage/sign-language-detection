@@ -50,11 +50,12 @@ def test_RNN_model(test_data_path, input_file_mask, model_weights_file, output_r
     print(classification_report(y_true, y_pred, target_names=test_gen.get_class_names()))
 
     # save results to file
-    results_file = open(output_results_file, 'w') 
-    results_file.write('video clip, probability class 0 (%s), probability class 1 (%s), probability class 2 (%s), predicted, groundtruth, correct?\n' % tuple(test_gen.get_class_names()))
+    results_file = open(output_results_file, 'w')
+    print(tuple(test_gen.get_class_names()))
+    results_file.write('video clip, probability class 0 (%s), probability class 1 (%s), predicted, groundtruth, correct?\n' % tuple(test_gen.get_class_names()))
     lines = []
     for k in range(len(y_id)):
-        lines.append('%s, %f, %f, %f, %d, %d, %s\n' % (y_id[k], y_prob[k][0], y_prob[k][1], y_prob[k][2], y_pred[k], y_true[k], 'ok' if y_pred[k] == y_true[k] else '*WRONG*'))
+        lines.append('%s, %f, %f, %d, %d, %s\n' % (y_id[k], y_prob[k][0], y_prob[k][1], y_pred[k], y_true[k], 'ok' if y_pred[k] == y_true[k] else '*WRONG*'))
     lines.sort(key=common.natural_sort_key)
     for s in lines:
         results_file.write(s)
@@ -92,7 +93,7 @@ if __name__ == "__main__":
 
     image_data_shape = (args.imwidth, args.imheight, 3)                         # image width, image height, channels
     video_clip_data_shape = (args.timesteps, args.imwidth, args.imheight, 3)    # timesteps, image width, image height, channels
-    rnn_input_shape = (args.timesteps, 4096) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
+    rnn_input_shape = (args.timesteps, 1000) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
 
     t = pytictoc.TicToc()
     t.tic()

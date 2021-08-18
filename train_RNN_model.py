@@ -45,9 +45,9 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     # generators for loading the CNN features
     print('Preparing the data generators...')
     print('Training data generator:')
-    train_gen = VideoSegmentDataGenerator(training_data_path, input_file_mask, output_batch_size=batch_size, thread_count)
+    train_gen = VideoSegmentDataGenerator(training_data_path, input_file_mask, output_batch_size=batch_size, thread_count=thread_count)
     print('Validation data generator:')
-    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size, thread_count)
+    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size, thread_count=thread_count)
 
     # determine class imbalance
     print('Checking for class imbalance')
@@ -136,6 +136,6 @@ if __name__ == "__main__":
 
     train_RNN_model(training_data_path=args.train, validation_data_path=args.validate, input_file_mask=args.mask, batch_size=args.batch,
         image_data_shape=image_data_shape, video_data_shape=video_clip_data_shape, rnn_input_shape=rnn_input_shape, include_cnn_fc1_layer=args.fc1_layer,
-        model_weights_file=args.model, learning_rate=float(args.lr), args.thread_count)
+        model_weights_file=args.model, learning_rate=float(args.lr), thread_count=args.thread_count)
 
     t.toc('RNN Training')
