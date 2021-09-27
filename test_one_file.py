@@ -13,8 +13,8 @@ from create_neural_net_model import create_neural_net_model
 # pylint: disable=no-member
 
 
-# 0 maps to 'P' (speaking), 1 maps to 'S' (signing), 2 maps to 'n' (other) 
-CLASS_MAP = ['P', 'S', 'n']
+# 0 maps to 'P' (speaking), 1 maps to 'S' (signing), 2 maps to 'n' (other)
+CLASS_MAP = ['S', 'n']
 
 
 def visualise_labels(gt_list, title_str=""):
@@ -67,7 +67,7 @@ def test_one_file(path_to_videos, video_id, groundtruth_file, timesteps, image_d
     # go through the sampled video frames for which we have CNN features...
     for frame_file in frame_list:
         frame_num = int(os.path.splitext(frame_file)[0])
-        
+
         # get groundtruth value
         gt_label = '?'
         if not gts.loc[gts['frame_id'] == frame_num].empty:
@@ -93,7 +93,7 @@ def test_one_file(path_to_videos, video_id, groundtruth_file, timesteps, image_d
         window_ndx = [0 if i < 0 else i for i in window_ndx]        # take care of loop boundary conditions
         window_ndx = [len(frame_numbers) - 1 if i >= len(frame_numbers) else i for i in window_ndx]  # take care of loop boundary conditions
 
-        # get the CNN features 
+        # get the CNN features
         X = []
         for (j, ndx) in enumerate(window_ndx):
             dt = np.load(cnn_files[ndx])
@@ -117,7 +117,7 @@ def test_one_file(path_to_videos, video_id, groundtruth_file, timesteps, image_d
         print(pred_labels[-1], end='', flush=True)
     print('\n\n')
     assert len(pred_labels) == len(gt_labels) == len(pred_prob) == len(pred_probs), 'logical error during prediction stage!!'
-  
+
     # visualise the groundtruth & the predictions
     fig1 = visualise_labels(gt_labels, 'groundtruth for video {}'.format(video_id))
     if output_path:
@@ -133,20 +133,20 @@ def test_one_file(path_to_videos, video_id, groundtruth_file, timesteps, image_d
     plt.plot(pred_probs[:, 2], color='orange')
     plt.show()
     if output_path:
-        fig3.savefig(os.path.join(output_path, video_id + '_prob.eps'))    
+        fig3.savefig(os.path.join(output_path, video_id + '_prob.eps'))
 
     # save results to file
     if output_path:
         results_file = open(os.path.join(output_path, video_id+'.txt'), 'w')
         results_file.write('video_id,frame_number,groundtruth_label,predicted_label,predicted_label_probability,probability_P,probability_S,probability_n,mismatch_flag\n')
         for k in range(len(frame_numbers)):
-            results_file.write('%s,%d,%s,%s,%f,%f,%f,%f,%s\n' % (video_id, frame_numbers[k], gt_labels[k], pred_labels[k], pred_prob[k], 
+            results_file.write('%s,%d,%s,%s,%f,%f,%f,%f,%s\n' % (video_id, frame_numbers[k], gt_labels[k], pred_labels[k], pred_prob[k],
                                 pred_probs[k,0], pred_probs[k,1], pred_probs[k,2], ' ' if gt_labels[k] == pred_labels[k] else '*WRONG*'))
         results_file.close()
 
     print('\nready')
 
-           
+
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
