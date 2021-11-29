@@ -52,7 +52,6 @@ class VideoSegmentReader(threading.Thread):
                     X.append(dt[0, ...])
                 X = np.array(X)
                 sample_no += 1
-
                 # append to our batch
                 X_batch.append(X)
                 Y_batch[sample_no-1, Y] = 1         # one-hot encoding of the class label

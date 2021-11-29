@@ -47,7 +47,7 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
     print('Training data generator:')
     train_gen = VideoSegmentDataGenerator(training_data_path, input_file_mask, output_batch_size=batch_size, thread_count=thread_count)
     print('Validation data generator:')
-    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size, thread_count=thread_count)
+    validation_gen = VideoSegmentDataGenerator(validation_data_path, input_file_mask, output_batch_size=batch_size, thread_count=1)
 
     # determine class imbalance
     print('Checking for class imbalance')
@@ -58,7 +58,7 @@ def train_RNN_model(training_data_path, validation_data_path, input_file_mask, b
                  ModelCheckpoint(model_weights_file, monitor='val_loss', save_best_only=True, verbose=1),
                  _myTrainingCallback()]
 
-    history = model.fit(train_gen.generator(), 
+    history = model.fit(train_gen.generator(),
                         steps_per_epoch=train_gen.number_of_batches(),
                         validation_data=validation_gen.generator(),
                         validation_steps=validation_gen.number_of_batches(),
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     image_data_shape = (args.imwidth, args.imheight, 3)                         # image width, image height, channels
     video_clip_data_shape = (args.timesteps, args.imwidth, args.imheight, 3)    # timesteps, image width, image height, channels
-    rnn_input_shape = (args.timesteps, 1000) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
+    rnn_input_shape = (args.timesteps, 11) if args.fc1_layer else (args.timesteps, 7, 7, 512)    # timesteps, CNN features width, CNN features height, CNN features channels
 
     t = pytictoc.TicToc()
     t.tic()

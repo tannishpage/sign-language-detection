@@ -14,7 +14,8 @@ import numpy as np
 from keras import preprocessing
 from keras.applications.vgg16 import preprocess_input
 import common
-from create_neural_net_model import create_cnn_model
+#from create_neural_net_model import create_cnn_model
+from CNN_For_Feature_Extraction.create_CNN_Model import create_cnn_model
 import cv2
 
 def get_groundtruth_data(groundtruth_file):
@@ -70,9 +71,9 @@ def generate_CNN_features_opencv(input_path, cnn_model, output_path, groundtruth
                     # Note that we don't scale the pixel values because VGG16 was not trained with normalised pixel values!
                     # Instead we use the pre-processing function that comes specifically with the VGG16
                     resized_frame = cv2.resize(frame, image_data_shape[0:2], interpolation=cv2.INTER_AREA)
-                    X = preprocess_input(resized_frame)
+                    #X = preprocess_input(resized_frame)
 
-                    X = np.expand_dims(X, axis=0)       # package as a batch of size 1, by adding an extra dimension
+                    X = np.expand_dims(resized_frame, axis=0)       # package as a batch of size 1, by adding an extra dimension
 
                     # generate the CNN features for this batch
                     #print(".", end='', flush=True)
@@ -192,7 +193,8 @@ if __name__ == "__main__":
         exit()
 
     image_data_shape = (args.imwidth, args.imheight, 3)   # width, height, channels
-    model = create_cnn_model(image_data_shape, include_fc1_layer=args.fc1_layer)
+    model = create_cnn_model(image_data_shape, args.fc1_layer, 11)
+    model.load_weights("/home/tannishpage/Documents/Sign_Language_Detection/feature_cnn_senz3D_weights.h5")
 
     if (args.opencv_mode):
         generate_CNN_features_opencv(input_path=args.input, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth, video_formats=tuple(args.video_formats.split(" ")), image_data_shape=image_data_shape)
