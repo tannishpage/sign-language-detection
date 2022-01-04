@@ -121,7 +121,7 @@ def extract_motion_history(input_path, output_path, resize_shape, output_fps, nu
     videofiles_to_process = []
     file_count = 1
     for file in listing:
-        if os.path.isfile(file):
+        if os.path.isfile(file) and (file.endswith(".mp4") or file.endswith(".mkv")):
             output_video_dir = os.path.join(output_path, os.path.splitext(os.path.basename(file))[0])
 
             # if we haven't already generated the MHI for this video...

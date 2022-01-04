@@ -9,7 +9,7 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dropout, Flatten, Dense, LSTM, GRU, BatchNormalization, TimeDistributed, Bidirectional, MaxPool2D
 from tensorflow.keras.optimizers import SGD, Adam, RMSprop
 from tensorflow.keras.applications.vgg16 import VGG16
-from keras.utils.vis_utils import plot_model
+#from tensorflow.keras.utils.vis_utils import plot_model
 
 
 def create_cnn_model(image_data_shape, include_fc1_layer):
@@ -25,7 +25,7 @@ def create_cnn_model(image_data_shape, include_fc1_layer):
 
     print('Convolutional base:')
     print(cnn_model.summary())
-    plot_model(cnn_model, to_file='CNN.png', show_shapes=True, show_layer_names=True)
+    #plot_model(cnn_model, to_file='CNN.png', show_shapes=True, show_layer_names=True)
     return cnn_model
 
 
@@ -78,7 +78,7 @@ def create_neural_net_model(image_data_shape, video_clip_data_shape, rnn_input_s
         for lyr in rnn_model.layers:
             model.add(lyr)         # here we are probably adding a reference, but it doesn't matter because model will not be returned
         print(model.summary())
-        plot_model(model, to_file='td(CNN)_GRU.png', show_shapes=True, show_layer_names=True)
+        #plot_model(model, to_file='td(CNN)_GRU.png', show_shapes=True, show_layer_names=True)
         return model
 
     # else we return whatever part of the model the user requested

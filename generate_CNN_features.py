@@ -14,8 +14,8 @@ import numpy as np
 from keras import preprocessing
 from keras.applications.vgg16 import preprocess_input
 import common
-#from create_neural_net_model import create_cnn_model
-from CNN_For_Feature_Extraction.create_CNN_Model import create_cnn_model
+from create_neural_net_model import create_cnn_model
+#from CNN_For_Feature_Extraction.create_CNN_Model import create_cnn_model
 import cv2
 
 def get_groundtruth_data(groundtruth_file):
@@ -193,10 +193,10 @@ if __name__ == "__main__":
         exit()
 
     image_data_shape = (args.imwidth, args.imheight, 3)   # width, height, channels
-    model = create_cnn_model(image_data_shape, args.fc1_layer, 11)
-    model.load_weights("/home/tannishpage/Documents/Sign_Language_Detection/feature_cnn_senz3D_weights.h5")
+    model = create_cnn_model(image_data_shape, args.fc1_layer)
+    #model.load_weights("/home/tannishpage/Documents/Sign_Language_Detection/feature_cnn_senz3D_weights.h5")
 
-    if (args.opencv_mode):
+    if (args.opencv_mode == "True"):
         generate_CNN_features_opencv(input_path=args.input, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth, video_formats=tuple(args.video_formats.split(" ")), image_data_shape=image_data_shape)
     else:
         generate_CNN_features(input_path=args.input, input_file_mask=args.mask, cnn_model=model, output_path=args.output, groundtruth_file=args.groundtruth)
