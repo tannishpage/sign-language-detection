@@ -16,5 +16,6 @@ sys.path.append("path to SORT repo")
 4. numpy
 5. scikit-image (skimage)
 6. matplotlib
+7. opencv
 
-Dependencies 3 to 6 can be installed using `pip install tensorflow=2.5.0 numpy scikit-image matplotlib`
+Dependencies 3 to 7 can be installed using `pip install tensorflow=2.5.0 opencv-python numpy scikit-image matplotlib`
